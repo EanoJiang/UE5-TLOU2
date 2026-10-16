@@ -1,0 +1,5 @@
+import pathlib,struct,json
+b=pathlib.Path(r'D:/Unpack_3A/TLOU2/Assets/tlou2_assets/actor97/anim-ellie-player-movement.pak').read_bytes(); q=0x95ae20;h=b[q:q+2496]
+for base in [0xa0,0x100,0x120,0x160,0x200,0x240,0x280,0x2a0,0x2b0,0x2c0,0x2d0,0x3f0,0x410,0x4a0,0x4c0,0x4d0,0x4e0,0x4f0,0x500]:
+ print('\n',hex(base));
+ for o in range(base,min(base+0x100,len(h)),16): print(f'{o:03x}: '+h[o:o+16].hex(' '))

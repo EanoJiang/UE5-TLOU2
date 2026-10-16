@@ -1,0 +1,3 @@
+const fs=require('fs');const b=fs.readFileSync('D:/Steam/steamapps/common/The Last of Us Part II/tlou-ii.exe');const image=0x140000000n, fileBase=0x600n;function findCalls(target){let arr=[];for(let p=0;p<b.length-5;p++){if(b[p]===0xe8){let rel=b.readInt32LE(p+1),va=image+BigInt(p-0x600)+BigInt(0x1000)+BigInt(5)+BigInt(rel);/* wrong */}}}
+// map file offset to VA section .text base file1536=>rva1000
+const targetVA=0x1418302c0n;const targetFile=Number(targetVA-0x140000000n-0x1000n+0x600n);console.log('targetFile',targetFile.toString(16));for(let p=0;p<b.length-5;p++){if(b[p]!==0xe8)continue;const rel=b.readInt32LE(p+1);const va=0x140000000n+BigInt(0x1000+p-0x600)+5n+BigInt(rel);if(va===targetVA)console.log('callxref',p.toString(16));}

@@ -1,0 +1,1 @@
+const fs=require('fs');const p='D:/TLOU2_UE5_8_Codex/Content/TLOU2/Reports/CODEC_41430102_STRUCTURE_TARGET.json';const j=JSON.parse(fs.readFileSync(p));j.header.observed_u16_low_at_0x3c=0x000f;j.header.observed_u16_high_at_0x3c=0x0030;delete j.header.observed_u16_at_0x3c;fs.writeFileSync(p,JSON.stringify(j,null,2));

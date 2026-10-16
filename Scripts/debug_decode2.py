@@ -1,0 +1,2 @@
+import sys,time,struct;sys.path.insert(0,'Scripts');import decode_root_candidate_tracks as d
+p=r'D:\TLOU2_UE5_8_Codex\Exports\AnimationSources\raw\anim-ellie-player-movement\source.pak'; b=open(p,'rb').read();magic,hdr,li,lo,pc,pt,fp,fo,*_=d.read_header(b); pages=[struct.unpack_from('<3I',b,pt+12*i) for i in range(pc)]; print('loaded',len(b),pc);t=time.time(); x=d.parse(p); print('parsed',len(x['tracks']),time.time()-t)

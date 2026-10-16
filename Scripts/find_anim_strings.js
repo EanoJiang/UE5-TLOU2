@@ -1,0 +1,1 @@
+const fs=require('fs');const b=fs.readFileSync('D:/Steam/steamapps/common/The Last of Us Part II/tlou-ii.exe');let arr=[];for(let p=0;p<b.length-8;p++){if(b[p]===65&&b[p+1]===110&&b[p+2]===105&&b[p+3]===109){let e=b.indexOf(0,p);if(e-p<100)arr.push([p,b.subarray(p,e).toString()]);}}console.log(arr.slice(0,100));console.log('count',arr.length);

@@ -1,0 +1,1 @@
+const fs=require('fs');const b=fs.readFileSync('D:/Unpack_3A/TLOU2/Assets/tlou2_assets/actor97/anim-ellie-player-movement.pak');const p=9809440,s=p+0x500;for(let o=0;o<0x4b0;o+=2){const u=b.readUInt16LE(s+o);if(o<0x100)console.log(o.toString(16).padStart(3,'0'),u.toString(16).padStart(4,'0'),b.readInt16LE(s+o),b.readFloatLE(s+o));}

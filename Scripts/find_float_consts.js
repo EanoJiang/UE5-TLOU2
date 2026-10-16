@@ -1,0 +1,1 @@
+const fs=require('fs');const b=fs.readFileSync('D:/Steam/steamapps/common/The Last of Us Part II/tlou-ii.exe');for(const h of ['f304353f','f304b53f','0000803f','0000003f','0000403f']){let pat=Buffer.from(h,'hex'),a=[],p=0;while((p=b.indexOf(pat,p))>=0){a.push(p);p+=1;}console.log(h,a.length,a.slice(0,50).map(x=>'0x'+x.toString(16)).join(' '));}

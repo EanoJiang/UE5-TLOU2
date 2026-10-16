@@ -1,0 +1,1 @@
+const fs=require('fs');const b=fs.readFileSync('D:/Steam/steamapps/common/The Last of Us Part II/tlou-ii.exe');const o=0x30056b0;console.log(b.subarray(o-128,o+512).toString('hex').match(/../g).join(' '));console.log(b.subarray(o-128,o+512).toString('latin1'));

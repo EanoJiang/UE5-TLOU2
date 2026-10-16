@@ -1,0 +1,1 @@
+const fs=require('fs');const b=fs.readFileSync('D:/TLOU2_UE5_8_Codex/Exports/AnimationSources/raw/anim-ellie-player-movement/codec_497.ndanim.bin');for(const [a,z] of [[0x2d0,0x320],[0x410,0x440]]){const arr=[];for(let o=a;o<z;o+=2)arr.push(b.readUInt16LE(o));console.log(a.toString(16),arr.length,arr.join(','));}
