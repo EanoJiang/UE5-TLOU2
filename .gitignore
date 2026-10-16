@@ -72,3 +72,26 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+# Git-ready source exclusions
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+Exports/
+Blender/
+_Archive/
+--background/
+AnimTest/
+_external/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.tmp
+
+# One-off reverse-engineering scratch kept outside the Git baseline
+Scripts/_*.py
+Scripts/tmp_*.js
+Scripts/*_tmp.py
+Scripts/*_tmp.js
+
+docs/superpowers/

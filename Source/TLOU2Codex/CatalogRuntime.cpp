@@ -2,6 +2,7 @@
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SceneComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Engine/Canvas.h"
 #include "Engine/Texture2D.h"
 #include "EngineUtils.h"
@@ -47,6 +48,44 @@ void ApplyCatalogAffineCorrectives(UWorld* World)
                 Component->SetMorphTarget(Morph->GetFName(), 1.0f);
         }
     }
+}
+
+bool TryGetCatalogCharacterCenter(UWorld* World, FVector& OutCenter)
+{
+    if (!World) return false;
+
+    FBox Bounds(EForceInit::ForceInit);
+    bool bFoundBounds = false;
+    FVector BodyCenter = FVector::ZeroVector;
+    bool bFoundBodyCenter = false;
+    for (TActorIterator<AActor> It(World); It; ++It)
+    {
+        if (!It->GetClass()->GetName().Contains(TEXT("BP_ElliePatrolCharacter"))) continue;
+
+        TArray<UPrimitiveComponent*> Components;
+        It->GetComponents<UPrimitiveComponent>(Components);
+        for (UPrimitiveComponent* Component : Components)
+        {
+            if (!Component || !Component->IsVisible() || Component->Bounds.SphereRadius <= KINDA_SMALL_NUMBER)
+                continue;
+
+            const FBoxSphereBounds& ComponentBounds = Component->Bounds;
+            Bounds += ComponentBounds.Origin - ComponentBounds.BoxExtent;
+            Bounds += ComponentBounds.Origin + ComponentBounds.BoxExtent;
+            if (Component->GetName() == TEXT("SKC_BodyClothing"))
+            {
+                BodyCenter = ComponentBounds.Origin;
+                bFoundBodyCenter = true;
+            }
+            bFoundBounds = true;
+        }
+    }
+
+    if (!bFoundBounds) return false;
+    // The body is the stable horizontal reference. Backpack and hair bounds
+    // are asymmetric and would move the yaw axis away from the character.
+    OutCenter = bFoundBodyCenter ? BodyCenter : Bounds.GetCenter();
+    return true;
 }
 
 void WriteCatalogVertexAudit(UWorld* World)
@@ -170,12 +209,30 @@ void ACatalogPawn::BeginPlay()
     if (PlacedCamera)
     {
         const FVector Direction = PlacedCamera->GetActorForwardVector();
-        Radius = InitialRadius = 340;
-        Pivot = InitialPivot = PlacedCamera->GetActorLocation() + Direction * Radius;
+        const FVector CameraLocation = PlacedCamera->GetActorLocation();
+        constexpr double SourceTargetDistance = 300.0;
+        const FVector SourceTarget = CameraLocation + Direction * SourceTargetDistance;
+        Radius = InitialRadius = SourceTargetDistance;
+        Pivot = InitialPivot = SourceTarget;
         const FRotator Away = (-Direction).Rotation();
         Yaw = InitialYaw = Away.Yaw;
         Pitch = InitialPitch = Away.Pitch;
         Camera->FieldOfView = PlacedCamera->GetCameraComponent()->FieldOfView;
+
+        // The placed camera's look-at point is only a framing hint. Use the
+        // visible character geometry as the orbit center so horizontal mouse
+        // rotation keeps the character on the screen center axis.
+        FVector CharacterCenter;
+        if (TryGetCatalogCharacterCenter(GetWorld(), CharacterCenter))
+        {
+            Pivot = InitialPivot = FVector(CharacterCenter.X, CharacterCenter.Y, SourceTarget.Z);
+            const FVector AwayFromCharacter = CameraLocation - Pivot;
+            Radius = InitialRadius = AwayFromCharacter.Size();
+            const FRotator Orbit = AwayFromCharacter.Rotation();
+            Yaw = InitialYaw = Orbit.Yaw;
+            Pitch = InitialPitch = Orbit.Pitch;
+            bCharacterPivotResolved = true;
+        }
     }
     ResetCatalogView();
     if (APlayerController* PC = Cast<APlayerController>(GetController()))
@@ -191,8 +248,13 @@ void ACatalogPawn::BeginPlay()
 void ACatalogPawn::UpdateCamera()
 {
     const FVector Away = FRotator(Pitch, Yaw, 0).Vector();
-    const FVector Location = Pivot + Away * Radius;
-    Camera->SetWorldLocationAndRotation(Location, (Pivot - Location).Rotation());
+    const FVector VerticalTranslation = FVector::UpVector * CameraVerticalOffset;
+    const FVector Location = Pivot + Away * Radius + VerticalTranslation;
+    // Translate the look-at reference together with the camera. This keeps
+    // the camera's yaw/pitch fixed while the model moves straight through the
+    // frame instead of introducing a compensating rotation.
+    const FVector LookAt = Pivot + VerticalTranslation;
+    Camera->SetWorldLocationAndRotation(Location, (LookAt - Location).Rotation());
 }
 
 void ACatalogPawn::ResetCatalogView()
@@ -201,6 +263,7 @@ void ACatalogPawn::ResetCatalogView()
     Radius = InitialRadius;
     Yaw = InitialYaw;
     Pitch = InitialPitch;
+    CameraVerticalOffset = InitialCameraVerticalOffset;
     UpdateCamera();
 }
 
@@ -230,6 +293,25 @@ FVector ACatalogPawn::GetCatalogCameraLocation() const { return Camera->GetCompo
 void ACatalogPawn::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+
+    if (!bCharacterPivotResolved)
+    {
+        FVector CharacterCenter;
+        if (TryGetCatalogCharacterCenter(GetWorld(), CharacterCenter))
+        {
+            const FVector CameraLocation = Camera->GetComponentLocation();
+            const FVector HorizontalCenter(CharacterCenter.X, CharacterCenter.Y, InitialPivot.Z);
+            const FVector AwayFromCharacter = CameraLocation - HorizontalCenter;
+            Pivot = InitialPivot = HorizontalCenter;
+            Radius = InitialRadius = AwayFromCharacter.Size();
+            const FRotator Orbit = AwayFromCharacter.Rotation();
+            Yaw = InitialYaw = Orbit.Yaw;
+            Pitch = InitialPitch = Orbit.Pitch;
+            bCharacterPivotResolved = true;
+            UpdateCamera();
+        }
+    }
+
     if (!CaptureOutputPath.IsEmpty())
     {
         CaptureElapsed += DeltaSeconds;
@@ -264,11 +346,35 @@ void ACatalogPawn::Tick(float DeltaSeconds)
     if (Zoom != 0) ZoomCatalogView(Zoom * DeltaSeconds);
     if (Pressed(EKeys::MouseScrollUp)) ZoomCatalogView(-0.1f);
     if (Pressed(EKeys::MouseScrollDown)) ZoomCatalogView(0.1f);
-    if (PC->IsInputKeyDown(EKeys::LeftMouseButton))
+    // Read relative mouse movement directly. This keeps the camera responsive
+    // to ordinary mouse movement while also allowing the existing left-drag
+    // interaction to continue working.
     {
         float X = 0, Y = 0;
         PC->GetInputMouseDelta(X, Y);
-        if (X != 0 || Y != 0) OrbitCatalogView(X * 0.25f, Y * 0.25f);
+        // Keep horizontal orbiting at a fixed, increased base response. Only
+        // vertical camera movement is scaled with zoom so close-ups remain
+        // precise without changing the left/right rotation feel.
+        const double MouseSensitivityScale = FMath::Clamp(
+            Radius / FMath::Max(InitialRadius, 1.0), 0.35, 1.0);
+        constexpr double BaseMouseYawSensitivity = 0.5;
+        constexpr double BaseMouseVerticalSpeed = 2.0;
+        // A horizontal movement orbits around the fixed character pivot. From the
+        // map's +Y starting side, negative yaw moves toward +X (clockwise) and
+        // positive yaw moves toward -X (counter-clockwise); mouse X already
+        // has those signs for left and right movements respectively.
+        if (X != 0)
+            OrbitCatalogView(float(double(X) * BaseMouseYawSensitivity), 0.0f);
+
+        // Keep vertical movement independent from pitch/orbiting: moving
+        // upward raises the camera and moving downward lowers it.
+        if (Y != 0)
+        {
+            CameraVerticalOffset = FMath::Clamp(
+                CameraVerticalOffset - double(Y) * BaseMouseVerticalSpeed * MouseSensitivityScale,
+                -400.0, 400.0);
+            UpdateCamera();
+        }
     }
 }
 

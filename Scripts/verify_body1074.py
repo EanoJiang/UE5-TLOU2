@@ -1,3 +1,0 @@
-import unreal, json
-sk=unreal.load_asset('/Game/TLOU2/Probe1074/Ellie_1074_SkeletonProbe_Skeleton'); sm=unreal.load_asset('/Game/TLOU2/ExactBody1074/Ellie_Patrol_ExactBody'); pose=sk.get_reference_pose(); out={'probe_bones':len(pose.get_bone_names()),'body_bones':len(sm.get_editor_property('skeleton').get_reference_pose().get_bone_names()),'same':sm.get_editor_property('skeleton').get_path_name()==sk.get_path_name(),'first10':pose.get_bone_names()[:10],'last10':pose.get_bone_names()[-10:]}
-open('D:/TLOU2_UE5_8_Codex/Exports/body1074_verification.json','w').write(json.dumps(out,indent=2,default=str))

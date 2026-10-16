@@ -1,1 +1,0 @@
-const fs=require('fs'); const j=JSON.parse(fs.readFileSync('D:/TLOU2_UE5_8_Codex/Content/TLOU2/Reports/ANIMATION_SOURCE_DECODE_EVIDENCE.json')); for(let i=0;i<j.clips.length;i++){const c=j.clips[i]; if((c.resource||'').includes('prone-lg-aim-strafe-0-fw')) console.log(i,c)}

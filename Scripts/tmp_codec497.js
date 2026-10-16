@@ -1,1 +1,0 @@
-const fs=require('fs'); const p='D:/TLOU2_UE5_8_Codex/Exports/AnimationSources/raw/anim-ellie-player-movement/codec_497.ndanim.bin'; const b=fs.readFileSync(p); console.log('len',b.length.toString(16)); for(let o=0;o<b.length;o+=0x10){if(o<0x400||o>0x8e0&&o<0xa20||o>0x1180&&o<0x13a0){console.log(o.toString(16).padStart(4,'0'),b.subarray(o,o+0x10).toString('hex'));}}

@@ -1,1 +1,0 @@
-const fs=require('fs'); const j=JSON.parse(fs.readFileSync('D:/TLOU2_UE5_8_Codex/Content/TLOU2/Reports/ANIMATION_SOURCE_DECODE_EVIDENCE.json')); console.log(j.clips[495]);

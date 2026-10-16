@@ -1,1 +1,0 @@
-const fs=require('fs');const d='D:/TLOU2_UE5_8_Codex/Exports/AnimationSources/raw/anim-ellie-player-movement';for(const i of [494,495,496,497,498]){const b=fs.readFileSync(`${d}/codec_${i}.ndanim.bin`);console.log(i,b.readUInt32LE(0).toString(16),b.readUInt16LE(8),b.readUInt16LE(14),b.readUInt32LE(4).toString(16),b.subarray(0,16).toString('hex'));}

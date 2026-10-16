@@ -1,25 +1,20 @@
 # Git 上传准备说明
 
-此目录由 D:\TLOU2_UE5_8_Codex 生成，目标是提供一个适合加入 Git 的 UE 5.8 工程副本。此次只复制和整理文件，未执行 git init、git add、git commit 或 git push。
+此目录由 `D:\TLOU2_UE5_8_Codex` 的当前清理版本同步生成。同步只覆盖工作文件，保留 `.git`，未执行 `git add`、`git commit`、`git push` 或任何历史重写。
 
-## 保留内容
+保留内容：
 
-- Content/：UE 资产、材质、地图、Groom、SourcePaks 等核心工程内容。
-- Config/、Source/、Scripts/、docs/。
-- 根目录 TLOU2Codex.uproject、README、启动命令文件和小型工具脚本。
+- `Content/`：当前 UE 5.8 资产、Groom、Drawstring、HoodSeam、地图和 SourcePaks。
+- `Config/`、`Source/`、`Scripts/`、`docs/`、根目录项目/启动文件。
+- `Scripts/` 只保留当前资产管线和验证入口；根目录一次性探针、`_tmp*`/`tmp_*.js` 以及旧 Exact/1074/1390/RawRoot 导入族已移出。
+- `.gitignore`、`.gitattributes` 和本说明。
 
-## 从副本剔除的内容
+排除内容：
 
-- Binaries/、Intermediate/、DerivedDataCache/、Saved/：UE 构建输出、索引、着色器/派生缓存、日志和自动保存，可由引擎重新生成。
-- Exports/（源目录约 8.5 GiB）：截帧块、导出缓存、历史实验、重复备份和大量诊断文件。
-- Blender/（源目录约 1.7 GiB）：DCC 工作文件；其中多个 .blend 大于 GitHub 单文件 100 MB 限制，.blend1 是备份。
-- _Archive/、--background/、AnimTest/：归档、分析证据和测试临时资料。
-- _external/：嵌套的独立 Git 仓库及下载资料，避免形成嵌套仓库。
-- 根目录 tmp_anim_list.txt 和 Python __pycache__。
+- `Binaries/`、`Intermediate/`、`DerivedDataCache/`、`Saved/`：UE 构建输出、索引、缓存、日志和自动保存。
+- `Exports/`、`Blender/`、`_Archive/`、`--background/`、`AnimTest/`、`_external/`：大型交换文件、历史证据、实验缓存和嵌套资料。
+- `__pycache__/`、`*.py[cod]`、临时文件。
 
-## 后续上传提示
+`Config/DefaultEngine.ini` 中的 Android File Server `SecurityToken` 已替换为 `REPLACE_WITH_LOCAL_TOKEN`；本地使用时请通过未提交的本机配置设置新 token。
 
-副本根部的 .gitignore 已覆盖以上目录和常见 UE/IDE 临时文件。若之后需要上传 Blender 或 Exports 中的规范交换资产，建议单独筛选并使用 Git LFS；不要把完整的捕获缓存、历史备份和构建目录复制回来。项目 README 中指向 Exports/、Blender/ 的部分证据链接在这个精简副本中会缺失，原始资料仍保留在源目录。
-
-
-注意：在后续检查期间，如果 Unreal Editor 或相关工具打开此副本，可能自动生成少量 Intermediate/、Saved/ 或 Binaries/ 内容；这些路径已经由 .gitignore 忽略，不会被 Git 上传。若要让目录保持物理空白，请在关闭 Unreal Editor 后手动删除它们。
+源项目中的完整导出、Blender 文件、历史归档、Reports 和验证缓存仍保留在 `D:\TLOU2_UE5_8_Codex`，临时脚本留档在 `D:\TLOU2_UE5_8_Codex\_Archive\TLOU2_cleanup_2026-10-17\GitPrunedScratch`，未复制到本 Git 工作树。当前目标工作树约 542.3 MiB、1,169 个文件；最大单文件约 16.2 MiB，没有 GitHub 100 MiB 单文件限制。大体积 Blender/交换资产若需上传，应另用 Git LFS 或外部存储。

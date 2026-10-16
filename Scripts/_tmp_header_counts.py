@@ -1,3 +1,0 @@
-import struct,glob,os
-for p in [r'D:\TLOU2_UE5_8_Codex\Content\TLOU2\SourcePaks\ellie-skel.pak',r'D:\Unpack_3A\TLOU2\Assets\tlou2_assets\actor97\abby-skel.pak',r'D:\Unpack_3A\TLOU2\Assets\tlou2_assets\actor97\base-female-skel.pak']:
- b=open(p,'rb').read(); magic,hd,li,lo,n,pt,fp,fo,*_=struct.unpack_from('<11I',b,0);po,ps,_=struct.unpack_from('<3I',b,pt);ec=struct.unpack_from('<H',b,po+18)[0]; rs=po+struct.unpack_from('<I',b,po+20+8)[0]; print(os.path.basename(p),'len',len(b),'po',po,'rs',rs,'u32', [hex(struct.unpack_from('<I',b,rs+4*i)[0]) for i in range(24)],'u64',[hex(struct.unpack_from('<Q',b,rs+8*i)[0]) for i in range(12)])

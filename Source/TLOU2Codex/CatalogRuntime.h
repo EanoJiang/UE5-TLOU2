@@ -38,6 +38,11 @@ private:
     double InitialYaw = -65;
     double Pitch = 10;
     double InitialPitch = 10;
+    // Mouse vertical drag moves the camera vertically without moving the
+    // orbit pivot, so horizontal drags continue to orbit the character.
+    double CameraVerticalOffset = 0;
+    double InitialCameraVerticalOffset = 0;
+    bool bCharacterPivotResolved = false;
     bool bMenuVisible = true;
     FString CaptureOutputPath;
     double CaptureDelay = 15.0;
